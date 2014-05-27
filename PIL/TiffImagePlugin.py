@@ -214,6 +214,8 @@ OPEN_INFO = {
 
 PREFIXES = [b"MM\000\052", b"II\052\000", b"II\xBC\000"]
 
+CHECK_PREFIX = True
+
 def _accept(prefix):
     return prefix[:4] in PREFIXES
 
@@ -261,14 +263,12 @@ class ImageFileDirectory(collections.MutableMapping):
         :prefix: 'II'|'MM'  tiff endianness
         """
         self.prefix = prefix[:2]
-        if self.prefix == MM:
-            self.i16, self.i32 = ib16, ib32
-            self.o16, self.o32 = ob16, ob32
-        elif self.prefix in (II, '\xf5\xf5', ):
-            self.i16, self.i32 = il16, il32
-            self.o16, self.o32 = ol16, ol32
-        else:
-            raise SyntaxError("not a TIFF IFD")
+        if CHECK_PREFIX:
+            if self.prefix == MM:
+                self.i16, self.i32 = ib16, ib32
+                self.o16, self.o32 = ob16, ob32
+            else:
+                raise SyntaxError("not a TIFF IFD")
         self.reset()
 
     def reset(self):
